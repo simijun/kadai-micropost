@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    @if (Authh::check())
-        {{ (Auth::user()->name }}
+    @if (Auth::check())
+        {{ Auth::user()->name }}
     @else
         <div class="center jumbotron">
             <div class="text-center">
