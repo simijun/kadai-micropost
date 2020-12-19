@@ -9,6 +9,16 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use Notifiable;
+    
+    public function microposts()
+    {
+        return $this->hasMany(Micropost::class);
+    }
+    
+    public function loadRelationshipCounts()
+    {
+        $this->loadCount("microposts");
+    }
 
     /**
      * The attributes that are mass assignable.
