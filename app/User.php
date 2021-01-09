@@ -27,15 +27,10 @@ class User extends Authenticatable
     // このユーザをフォロー中のユーザ。（ Userモデルとの関係を定義）//
     public function followers()
     {
-        return $this->belongsToMany(User::class, 'user_follow', 'user_id', 'user_follow')->withTimestamps();
+        return $this->belongsToMany(User::class, 'user_follow', 'follow_id', 'user_id')->withTimestamps();
     }
     
-    public function loadRelationshipCounts()
-    {
-        $this->loadCount("microposts");
-        //このユーザに関係するモデルの件数をロードする。//
-        $this->loadCount(['microposts', 'followings', 'followers']);
-    }
+
     
     /**
      * $userIdで指定されたユーザをフォローする。
@@ -95,11 +90,55 @@ class User extends Authenticatable
         return $this->followings()->where('follow_id', $userId)->exists();
     }
     
-    /**
-     * このユーザに関係するモデルの件数をロードする。
-     */
+    //ユーザが追加したお気に入りの数と一覧を取得//
+    public function favorites()
+    {
+        return $this->belongsToMany(Micropost::class, 'favorites', 'user_id', 'micropost_id')->withTimestamps();
+    }
 
+    //お気に入り登録する//
+    public function favorite($micropostID)
+    {
+        $exist = $this->is_favorite($micropostID);
+        
+        if ($exist) {
+            return false;
+            
+        } else {
+            $this->favorites()->attach($micropostID);
+            return true;
+        }
+        
+    }
+    
+    //お気に入り解除する//
+    public function unfavorite($micropostID)
+    {
+        $exist = $this->is_favorite($micropostID);
+        
+        if ($exist) {
+            $this->favorites()->detach($micropostID);
+            return true;
+        }else {
+            return false;
+        }
+    }
 
+    //お気に入りされているかを判断する//
+    public function is_favorite($micropost_id)
+    {
+        return $this->favorites()->where('micropost_id', $micropost_id)->exists();
+    }
+
+    //このユーザに関係するモデルの件数をロードする
+    public function loadRelationshipCounts()
+    {
+        $this->loadCount("microposts");
+        //このユーザに関係するモデルの件数をロードする。//
+        $this->loadCount(['microposts', 'followings', 'followers', 'favorites']);
+    }
+    
+    
     /**
      * The attributes that are mass assignable.
      *
